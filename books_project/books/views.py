@@ -4,19 +4,39 @@ from rest_framework.views import APIView
 
 from rest_framework.response import Response
 
+from .serializers import BookSerializer
+
+from .models import Books
+
 # Create your views here.
 
 class BooksListCreateView(APIView):
 
+    serializer_class = BookSerializer
+
     def get(self,request,*args,**kwargs):
 
-        data = {'msg':'This is the list view'}
+        books = Books.objects.all()
+
+        book_serializer = self.serializer_class(books,many=True)
+
+        data = {'books':book_serializer.data}
 
         return Response(data=data,status=200)
     
     def post(self, request,*args,**kwargs):
 
-        data = {'msg':'This is the create view'}
+        book_serializer = self.serializer_class(data=request.data)
+
+        if book_serializer.is_valid():
+
+            book_serializer.save()
+
+            return Response(data={'msg':'This is the create view'},status=200)
+        
+        return Response(data=book_serializer.errors,status=400) 
+
+        # data = {'msg':'This is the create view'}
 
         return Response(data=data,status=200)
     
